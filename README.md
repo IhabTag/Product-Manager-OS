@@ -118,13 +118,14 @@ Add DNS `A` records → point to VPS IP:
 
 | Subdomain | Tool |
 |----------|------|
-| `n8n.example.com` | n8n |
+| `automation.example.com` | n8n |
 | `db.example.com` | NocoDB |
 | `dash.example.com` | Metabase |
-| `webmin.example.com` | Webmin |
-| `portainer.example.com` | Portainer |
+| `panel.example.com` | Webmin |
+| `services.example.com` | Portainer |
 | `proxy.example.com` | NGINX Proxy Manager |
 | `vector.example.com` | Qdrant (optional) |
+| `flow.example.com` | Qdrant (optional) |
 
 > ⚠️ Replace `example.com` with your real domain
 
@@ -156,12 +157,13 @@ Create one proxy host per subdomain:
 
 | Subdomain | Forward Host | Forward Port |
 |----------|---------------|--------------|
-| `n8n.example.com` | n8n | 5678 |
+| `automation.example.com` | n8n | 5678 |
 | `db.example.com` | nocodb | 8080 |
 | `dash.example.com` | metabase | 3000 |
-| `webmin.example.com` | VPS IP | 10000 |
-| `portainer.example.com` | portainer | 9000 |
+| `panel.example.com` | VPS IP | 10000 |
+| `services.example.com` | portainer | 9000 |
 | `vector.example.com` | qdrant | 6333 |
+| `flow.example.com` | flowise | 3013 |
 
 Enable:
 ✔ Force SSL  
@@ -235,4 +237,5 @@ If Product Manager OS helps you — please support the project:
 
 Happy Building!  
 Empower your Product Management. 🚀
+
 
