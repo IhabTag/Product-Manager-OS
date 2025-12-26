@@ -77,27 +77,17 @@ https://docs.portainer.io/start/install-ce/server/docker/linux#docker-run
 
 ---
 
-### 5️⃣ Create a project folder using Webmin
+### 5️⃣ Clone the GitHub Repository
 
 1. Open Webmin: `https://your-server-ip:10000`
-2. Navigate to **File Manager**
-3. Create a folder:
-```text
-/product-manager-os/
-```
-4. Open **Terminal** inside Webmin → run:
-```bash
-cd product-manager-os
-```
-
----
-
-### 6️⃣ Clone the GitHub Repository
-
+2. Open **Terminal** inside Webmin → run:
 ```bash
 git clone https://github.com/IhabTag/Product-Manager-OS .
 ```
 
+---
+
+### 6️⃣ Navigate to **File Manager** and edit the env file
 Edit `.env.example` → rename to `.env` and set passwords, domain names, etc.
 
 ---
@@ -108,7 +98,7 @@ Edit `.env.example` → rename to `.env` and set passwords, domain names, etc.
 docker compose up -d
 ```
 
-Check running containers on portainer
+Check running containers on portainer at: `https://your-server-ip:8000`
 
 ---
 
@@ -161,7 +151,7 @@ Create one proxy host per subdomain:
 | `db.example.com` | nocodb | 8080 |
 | `dash.example.com` | metabase | 3000 |
 | `panel.example.com` | VPS IP | 10000 |
-| `services.example.com` | portainer | 9000 |
+| `services.example.com` | portainer | 9443 |
 | `vector.example.com` | qdrant | 6333 |
 | `flow.example.com` | flowise | 3013 |
 
@@ -237,5 +227,6 @@ If Product Manager OS helps you — please support the project:
 
 Happy Building!  
 Empower your Product Management. 🚀
+
 
 
