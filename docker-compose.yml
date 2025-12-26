@@ -1,0 +1,215 @@
+services:
+  # -------------------------------------------------------------------
+  # Nginx Proxy Manager
+  # -------------------------------------------------------------------
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: always
+    ports:
+      - "81:81" # Port for the Nginx Proxy Manager UI
+      - "443:443" # Port for HTTPS traffic
+      - "80:80" # Port for HTTP traffic
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite" # Example environment variable
+    volumes:
+      - nginx_config:/config
+      - nginx_letsencrypt:/etc/letsencrypt
+    networks:
+      - net
+  # -------------------------------------------------------------------
+  # Flowise
+  # -------------------------------------------------------------------
+  flowise:
+    image: flowiseai/flowise:latest
+    container_name: flowise
+    ports:
+      - "${FLOWISE_PORT:-3013}:3013"
+    environment:
+      - PORT=3013
+      - CORS_ORIGINS=${FLOWISE_CORS_ORIGINS:-*}
+      - IFRAME_ORIGINS=${FLOWISE_IFRAME_ORIGINS:-*}
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+      - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT:-500mb}
+      - DEBUG=${FLOWISE_DEBUG:-true}
+      - DISABLE_FLOWISE_TELEMETRY=${FLOWISE_DISABLE_TELEMETRY:-true}
+      - APIKEY_STORAGE_TYPE=db
+    volumes:
+      - flowise_data:/root/.flowise
+    entrypoint: /bin/sh -c "sleep 3; flowise start"
+    networks:
+      - net
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:3013" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # -------------------------------------------------------------------
+  # n8n
+  # -------------------------------------------------------------------
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-true}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE:-Africa/Cairo}
+      - N8N_PORT=5678
+      - N8N_METRICS=${N8N_METRICS:-true}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - net
+    restart: always
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:5678/healthz" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # -------------------------------------------------------------------
+  # NocoDB + its Postgres (root-db)
+  # -------------------------------------------------------------------
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: nocodb
+    depends_on:
+      root-db:
+        condition: service_healthy
+    environment:
+      # Standard Postgres URI: pg://user:password@host:port/dbname
+      NC_DB: pg://${ROOT_DB_USER}:${ROOT_DB_PASSWORD}@root-db:${ROOT_DB_PORT:-5432}/${ROOT_DB_NAME}
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - nc_data:/usr/app/data
+    networks:
+      - net
+
+  root-db:
+    image: postgres:16.6
+    container_name: root-db
+    environment:
+      POSTGRES_DB: ${ROOT_DB_NAME}
+      POSTGRES_USER: ${ROOT_DB_USER}
+      POSTGRES_PASSWORD: ${ROOT_DB_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost -p 5432" ]
+      interval: 10s
+      retries: 10
+      timeout: 2s
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - net
+
+  # -------------------------------------------------------------------
+  # Metabase + its Postgres (metabase-db)
+  # -------------------------------------------------------------------
+  metabase-db:
+    image: postgres:16.6
+    container_name: postgres-metabase
+    environment:
+      POSTGRES_USER: ${MB_DB_USER}
+      POSTGRES_PASSWORD: ${MB_DB_PASS}
+      POSTGRES_DB: ${MB_DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${METABASE_DB_PORT:-25532}:5432"
+    networks:
+      - net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost -p 5432" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    restart: always
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: metabase-db
+      MB_DB_PORT: 5432
+      MB_DB_USER: ${MB_DB_USER}
+      MB_DB_PASS: ${MB_DB_PASS}
+      MB_DB_DBNAME: ${MB_DB_NAME}
+    ports:
+      - "33000:3000"
+    depends_on:
+      metabase-db:
+        condition: service_healthy
+    networks:
+      - net
+    volumes:
+      - metabase_data:/metabase-data
+    restart: always
+
+  # -------------------------------------------------------------------
+  # Qdrant
+  # -------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: always
+    ports:
+      - "7333:6333"
+      - "7334:6334"
+    expose:
+      - "6333"
+      - "6334"
+      - "6335"
+    environment:
+      - QDRANT__SERVICE__API_KEY=${QDRANT_API_KEY}
+    configs:
+      - source: qdrant_config
+        target: /qdrant/config/production.yaml
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - net
+
+# -------------------------------------------------------------------
+# Volumes
+# -------------------------------------------------------------------
+volumes:
+  db_data: {}
+  nc_data: {}
+  n8n_data: {}
+  postgres_data: {}
+  qdrant_data: {}
+  nginx_config: {}
+  nginx_letsencrypt: {}
+  flowise_data: {}
+  metabase_data: {}
+
+# -------------------------------------------------------------------
+# Network
+# -------------------------------------------------------------------
+networks:
+  net:
+    driver: bridge
+
+# -------------------------------------------------------------------
+# Configs
+# -------------------------------------------------------------------
+configs:
+  qdrant_config:
+    content: |
+      log_level: INFO
