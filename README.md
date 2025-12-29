@@ -217,6 +217,8 @@ docker compose restart
 - [DayOne - SaaS Starter Kit](https://github.com/IhabTag/DayOne)
 - [CS50 - Introduction to Computer Science](https://pll.harvard.edu/course/cs50-introduction-computer-science)
 
+And you can follow me on [LinkedIn](https://www.linkedin.com/in/ihab-tag/)
+
 ---
 
 ## �💬 Support
