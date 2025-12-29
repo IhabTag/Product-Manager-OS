@@ -13,6 +13,7 @@ services:
     environment:
       DB_SQLITE_FILE: "/data/database.sqlite" # Example environment variable
     volumes:
+      - nginx_data:/data
       - nginx_config:/config
       - nginx_letsencrypt:/etc/letsencrypt
     networks:
@@ -88,8 +89,8 @@ services:
       root-db:
         condition: service_healthy
     environment:
-      # Standard Postgres URI: pg://user:password@host:port/dbname
-      NC_DB: pg://${ROOT_DB_USER}:${ROOT_DB_PASSWORD}@root-db:${ROOT_DB_PORT:-5432}/${ROOT_DB_NAME}
+      # NocoDB format: pg://host:port?u=user&p=password&d=database
+      NC_DB: pg://root-db:5432?u=${ROOT_DB_USER}&p=${ROOT_DB_PASSWORD}&d=${ROOT_DB_NAME}
     ports:
       - "8080:8080"
     restart: always
@@ -194,6 +195,7 @@ volumes:
   n8n_data: {}
   postgres_data: {}
   qdrant_data: {}
+  nginx_data: {}
   nginx_config: {}
   nginx_letsencrypt: {}
   flowise_data: {}
