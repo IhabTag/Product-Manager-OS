@@ -56,24 +56,26 @@ password: provided by VPS host
 
 ### 4️⃣ Install Core Packages (Docker + Webmin + Portainer)
 
-Run the following:
+**Docker**
+Check the last version supported by portainer from here https://docs.portainer.io/start/requirements-and-prerequisites
+Select install specific version from https://docs.docker.com/engine/install/ubuntu/
+
+Replace the latest supported docker version and run the following:
 
 ```bash
-apt update && apt upgrade -y
 
-# Check the last version supported by portainer from here
-https://docs.portainer.io/start/requirements-and-prerequisites
+sudo apt install -y \
+  docker-ce=5:26.0.2-1~ubuntu.24.04~noble \
+  docker-ce-cli=5:26.0.2-1~ubuntu.24.04~noble \
+  containerd.io
 
-# Install Docker + Docker Compose
-# Select install specific version from
-https://docs.docker.com/engine/install/ubuntu/
+```
 
-# Install Webmin
-https://webmin.com/download/
+**Webmin**
+Install Webmin https://webmin.com/download/
 
 # Install Portainer
 https://docs.portainer.io/start/install-ce/server/docker/linux#docker-run
-```
 
 ---
 
@@ -97,6 +99,8 @@ Edit `.env.example` → rename to `.env` and set passwords, domain names, etc.
 ```bash
 docker compose up -d
 ```
+
+**Alternative: You can use portainer to deploy the containers and configure environment variables**
 
 Check running containers on portainer at: `https://your-server-ip:8000`
 
