@@ -210,7 +210,16 @@ docker compose restart
 
 ---
 
-## 💬 Support
+## � Bonus Resources
+
+- [Product Manager Automation Use Cases](https://docs.google.com/document/d/1Z9q6wnPj1BlicX-MU4XoXV7Sgb6wIZ6qXTeIhi6rbyk/edit?usp=sharing)
+- [System Design Primer](https://github.com/IhabTag/system-design-primer)
+- [DayOne - SaaS Starter Kit](https://github.com/IhabTag/DayOne)
+- [CS50 - Introduction to Computer Science](https://pll.harvard.edu/course/cs50-introduction-computer-science)
+
+---
+
+## �💬 Support
 
 Found an issue? Got an idea?  
 Open GitHub Issues → we’ll improve this together!
